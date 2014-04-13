@@ -150,7 +150,7 @@ class CurrencyConverter implements Module
         //    return $this->replyMtgox(null,$this->cache['btc']['obj'],$extra);
         }
 
-        $http = new HttpSession('b.epg.io', 80);
+        $http = new HttpSession('epg.io', 80); // Local private sandbox for BTC-E Bitcoin
         $http->setMaxLength(4096);
         $http->setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.152 Safari/537.22');
         $http->getPage(
