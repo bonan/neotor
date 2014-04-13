@@ -1,0 +1,12 @@
+neotor IRC-Bot %s
+
+Syntax: %s [-h] [-d] [-s] [-v] [-c file] [-p file]
+
+Argument:	Alias:		Description:
+--help      	-h		Show this help
+--debug        	-d		Debug (do not fork, use standard output as log, enable standard input).
+--service       -s      Run in service mode, connects as an irc server
+--version     	-v		Version information.
+--config=file	-c		Use an alternative config-file.
+--pidfile=file	-p		Use an alternative pid-file.
+
