@@ -23,11 +23,11 @@ class parseLink implements Module {
 			);
 		} elseif ($url = $this->url($msg)) {
 			$http = new httpSession($url[1], (strtolower($url[3])=='https'?443:80), strtolower($url[3])=='https');
-            $http->setMaxLength(524288);
-            if (strpos(strtolower($url[2]), '.gif') !== false)
-    			$http->setMaxLength(16*1048576);
+			$http->setMaxLength(524288);
+			if (strpos(strtolower($url[2]), '.gif') !== false)
+				$http->setMaxLength(16*1048576);
 			$http->getPage(Array($this, 'html'), array_merge($extra, Array('type' => 'uri', 'parent' => $parent)), $url[2]);
-            echo "privmsg(): getting page".PHP_EOL;
+			echo "privmsg(): getting page".PHP_EOL;
 		}
 
 	}
@@ -45,7 +45,7 @@ class parseLink implements Module {
 	}
 
 	protected function spotify($msg) {
-		$regex_types = "(track)"; //|album|artist)";
+		$regex_types = "(track|album|artist)";
 		$regex_id = "([0-9a-zA-Z]{22})";
 		$regex_url = "http\:\/\/open.spotify.com\/$regex_types\/$regex_id";
 		$regex_uri = "spotify\:$regex_types\:$regex_id";
@@ -68,7 +68,7 @@ class parseLink implements Module {
 	protected function url($msg) {
 		if (preg_match('~\b(https?)://((?:[^/\s]+\\.)+(?:[a-z]{2,10}))(/[^\s]+)?\.?(\s|$)~i', $msg, $match) == 1) {
 			if (empty($match[2]))
-			$match[2] = '/';
+				$match[2] = '/';
 			return Array($match[0], $match[2], $match[3], $match[1]);
 		}
 		return false;
@@ -76,8 +76,8 @@ class parseLink implements Module {
 	
 	public function html($http, $page, $vars) {
 		extract($vars);
-		
-        echo "html(): {$page->url}" . PHP_EOL;
+
+		echo "html(): {$page->url}" . PHP_EOL;
 
 		switch($type) {
 			case 'uri':
@@ -89,54 +89,52 @@ class parseLink implements Module {
 							
 						$parent->privmsg($replyto, (isset($httphost)?'['.$httphost.'] ':'').sprintf("Link title: %s", html_entity_decode($title)));
 					} else {
-                        $extra = '';
-                        if (isset($page->header['content-length'])) {
-                            $bytes = $page->header['content-length'];
-                            $prefix = Array('','k','M','G','T','P');
-                            $i = 0;
-                            while ($bytes > 1024 && ++$i < count($prefix))
-                                $bytes /= 1024;
+						$extra = '';
+						if (isset($page->header['content-length'])) {
+							$bytes = $page->header['content-length'];
+							$prefix = Array('','k','M','G','T','P');
+							$i = 0;
+							while ($bytes > 1024 && ++$i < count($prefix))
+								$bytes /= 1024;
 
-                            $extra .= ', '.round($bytes,2).$prefix[$i].'B';
+							$extra .= ', '.round($bytes,2).$prefix[$i].'B';
 
-                        }
-                        if ($page->header['content-type'] == 'image/gif' && strlen($page->data) < 16*1048576) {
-                            if (false !== ($pos=strpos($page->data, 'GIF89a'))) {
-                                list (,$width,$height) = unpack('v*', substr($page->data, $pos+6, 4));
-                                $extra .= ", {$width}x{$height}px";
-                            }
-                            if (false !== strpos($page->data, 'NETSCAPE2.0')) {
-                                $count = preg_match_all('/\x00\x21\xF9\x04.(..).\x00/s', $page->data, $out);
-                                if ($count > 0) {
-                                    $total_delay = 0;
-                                    foreach($out[1] as $delay) {
-                                        list(,$delay) = unpack('v', $delay);
-                                        $total_delay += $delay;
-                                    }
-                                    $extra .= ', animated ('.$count.' frames, '.($total_delay/100).' seconds)';
-                                }
-
-                            }
-
-                        }
-                        $parent->privmsg($replyto, (isset($httphost)?'['.$httphost.'] ':'').sprintf("[%s] %s", $page->header['content-type'], ltrim($extra,', ')));
+						}
+						if ($page->header['content-type'] == 'image/gif' && strlen($page->data) < 16*1048576) {
+							if (false !== ($pos=strpos($page->data, 'GIF89a'))) {
+								list (,$width,$height) = unpack('v*', substr($page->data, $pos+6, 4));
+								$extra .= ", {$width}x{$height}px";
+							}
+							if (false !== strpos($page->data, 'NETSCAPE2.0')) {
+								$count = preg_match_all('/\x00\x21\xF9\x04.(..).\x00/s', $page->data, $out);
+								if ($count > 0) {
+									$total_delay = 0;
+									foreach($out[1] as $delay) {
+										list(,$delay) = unpack('v', $delay);
+										$total_delay += $delay;
+									}
+									$extra .= ', animated ('.$count.' frames, '.($total_delay/100).' seconds)';
+								}
+							}
+						}
+						$parent->privmsg($replyto, (isset($httphost)?'['.$httphost.'] ':'').sprintf("[%s] %s", $page->header['content-type'], ltrim($extra,', ')));
 					}
 				} elseif (isset($page->header['location'])) {
-                    if (isset($redir) && $redir>2) return;
-		            if ($url = $this->url($page->header['location'])) {
-            			$http = new httpSession($url[1]);
-            			$http->setMaxLength(16384);
-                        echo "html(): http redirect to {$page->header['location']}".PHP_EOL;
-            			$http->getPage(Array($this, 'html'), array_merge($vars, Array(
-                            'redir' => (isset($redir)?$redir+1:1), 
-                            'httphost' => $url[1], 
-                            'type' => 'uri', 
-                            'parent' => $parent
-                        )), $url[2]);
-            		}
+					if (isset($redir) && $redir>2) return;
+					if ($url = $this->url($page->header['location'])) {
+						$http = new httpSession($url[1]);
+						$http->setMaxLength(16384);
+						echo "html(): http redirect to {$page->header['location']}".PHP_EOL;
+						$http->getPage(Array($this, 'html'), array_merge($vars, Array(
+							'redir' => (isset($redir)?$redir+1:1), 
+							'httphost' => $url[1], 
+							'type' => 'uri', 
+							'parent' => $parent
+						)), $url[2]);
+					}
 				} else {
-                    echo "html(): Got {$page->status}".PHP_EOL;
-                }
+					echo "html(): Got {$page->status}".PHP_EOL;
+				}
 				break;
 				;;
 				
@@ -144,23 +142,31 @@ class parseLink implements Module {
 				if ($page->status == 200) {
 					$spotify = simplexml_load_string($page->data);
 
-					$r = sprintf('%s - %s', 
-						$parent->charsetDecode($spotify->artist->name),
-						$parent->charsetDecode($spotify->name)
-					);
-					if (isset($spotify->album))
-						$r .= ' / ' . $parent->charsetDecode($spotify->album->name);
-					
-					$len_m = floor($spotify->length / 60);
-					$len_s = floor($spotify->length % 60);
-					
-					$r .= sprintf(' (%d:%02d)', $len_m, $len_s);
-					
+					if (isset($spotify->artist) && isset($spotify->album)) {
+						$r = sprintf('%s - %s', 
+							$parent->charsetDecode($spotify->artist->name),
+							$parent->charsetDecode($spotify->name)
+						);
+						if (isset($spotify->album))
+							$r .= ' / ' . $parent->charsetDecode($spotify->album->name);
+
+						$len_m = floor($spotify->length / 60);
+						$len_s = floor($spotify->length % 60);
+
+						$r .= sprintf(' (%d:%02d)', $len_m, $len_s);
+					} else if (isset($spotify->artist)) {
+						$r = sprintf('%s / %s',
+							$parent->charsetDecode($spotify->artist->name),
+							$parent->charsetDecode($spotify->name)
+						);
+					} else {
+						$r = $parent->charsetDecode($spotify->name);
+					}
 					$parent->privmsg($replyto, sprintf("[spotify] $r"));
 				}
 				break;
 				;;
 		}
-		
+
 	}
 }
